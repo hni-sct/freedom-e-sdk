@@ -27,6 +27,7 @@
 #include "UART_driver.h"
 #include "led-matrix.h"
 #include "bmi160.h"
+#include "watchdog.h"
 
 asm (".global _printf_float");
 
@@ -136,6 +137,9 @@ int main()
     bmi160_init(&sensor);
     config_sensors(&sensor);
     init_plic();
+
+    wdt_disable();
+    wdt_configure(0, 32768, 16384);
 
     LEDCoordinates led;
     led.fx = 15.0;
