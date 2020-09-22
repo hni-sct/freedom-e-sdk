@@ -125,7 +125,7 @@ int main()
 
     UART_init(115200, 0);
 
-    spi_begin(PIN_10_OFFSET, 65000000);
+    spi_begin(PIN_10_OFFSET, 65000);
     setup_matrix();
 
     sensor.id = 0;
@@ -140,6 +140,7 @@ int main()
 
     wdt_disable();
     wdt_configure(0, 32768, 16384);
+    wdt_enable();
 
     LEDCoordinates led;
     led.fx = 15.0;
@@ -160,6 +161,7 @@ int main()
             move_by_y(&led);
         }
         render(&led);
+        wdt_pet();
     }
     return 0;
 }
