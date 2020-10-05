@@ -150,7 +150,7 @@ int main()
     while (1) {
         // for safety measures:
         // LEDCoordinates led_dup = led; // should be led_dup(led)
-        get_sensor_data(&sensor, &x, &y, &z);
+        get_sensor_data(&sensor, &y, &x, &z);
         led.delta_x = smooth_data(x);
         led.delta_y = smooth_data(y);
 
