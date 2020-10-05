@@ -21,9 +21,9 @@
 
 #define BIT(x) (1 << x)
 
-#define DIN PIN_2_OFFSET
-#define CS PIN_3_OFFSET
-#define CLK PIN_4_OFFSET
+#define DIN PIN_4_OFFSET
+#define CS PIN_5_OFFSET
+#define CLK PIN_6_OFFSET
 
 #define max7219_reg_noop        0x00
 #define max7219_reg_digit0      0x01
@@ -120,14 +120,14 @@ void set_intensity(uint8_t intensity)
 
 void setup_matrix(void)
 {
-    GPIO_REG(GPIO_OUTPUT_EN) |= BIT(PIN_2_OFFSET);
-    GPIO_REG(GPIO_INPUT_EN) &= ~BIT(PIN_2_OFFSET);
-
-    GPIO_REG(GPIO_OUTPUT_EN) |= BIT(PIN_3_OFFSET);
-    GPIO_REG(GPIO_INPUT_EN) &= ~BIT(PIN_3_OFFSET);
-
     GPIO_REG(GPIO_OUTPUT_EN) |= BIT(PIN_4_OFFSET);
     GPIO_REG(GPIO_INPUT_EN) &= ~BIT(PIN_4_OFFSET);
+
+    GPIO_REG(GPIO_OUTPUT_EN) |= BIT(PIN_5_OFFSET);
+    GPIO_REG(GPIO_INPUT_EN) &= ~BIT(PIN_5_OFFSET);
+
+    GPIO_REG(GPIO_OUTPUT_EN) |= BIT(PIN_6_OFFSET);
+    GPIO_REG(GPIO_INPUT_EN) &= ~BIT(PIN_6_OFFSET);
 
     set_pin(CS, HIGH);
 
