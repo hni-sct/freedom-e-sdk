@@ -2,6 +2,7 @@
 #include "plic/plic_driver.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "watchdog.h"
 
 static uint8_t float_stuck = 0;
 static uint8_t random_flip = 0;
@@ -65,6 +66,11 @@ static void button_1_handler(void)
 
 }
 
+static void button_2_handler(void) {
+  wdt_pet();
+  GPIO_REG(GPIO_RISE_IP) = (0x1 << BUTTON_2_OFFSET);
+}
+
 void init_plic(void)
 {
     PLIC_init(&g_plic, PLIC_CTRL_ADDR, PLIC_NUM_INTERRUPTS,
@@ -77,24 +83,34 @@ void init_plic(void)
       g_ext_interrupt_handlers[ii] = no_interrupt_handler;
     }
 
-    GPIO_REG(GPIO_OUTPUT_EN)  &= ~((0x1 << BUTTON_0_OFFSET) | (0x1 << BUTTON_1_OFFSET));
-    GPIO_REG(GPIO_PULLUP_EN)  &= ~((0x1 << BUTTON_0_OFFSET) | (0x1 << BUTTON_1_OFFSET));
-    GPIO_REG(GPIO_INPUT_EN)   |=  ((0x1 << BUTTON_0_OFFSET) | (0x1 << BUTTON_1_OFFSET));
+    GPIO_REG(GPIO_OUTPUT_EN)  &= ~((0x1 << BUTTON_0_OFFSET)
+                                | (0x1 << BUTTON_1_OFFSET)
+                                | (0x1 << BUTTON_2_OFFSET));
+    GPIO_REG(GPIO_PULLUP_EN)  &= ~((0x1 << BUTTON_0_OFFSET)
+                                | (0x1 << BUTTON_1_OFFSET)
+                                | (0x1 << BUTTON_2_OFFSET));
+    GPIO_REG(GPIO_INPUT_EN)   |=  ((0x1 << BUTTON_0_OFFSET)
+                                | (0x1 << BUTTON_1_OFFSET)
+                                | (0x1 << BUTTON_2_OFFSET));
 
     g_ext_interrupt_handlers[INT_DEVICE_BUTTON_0] = button_0_handler;
     g_ext_interrupt_handlers[INT_DEVICE_BUTTON_1] = button_1_handler;
+    g_ext_interrupt_handlers[INT_DEVICE_BUTTON_2] = button_2_handler;
 
     // Have to enable the interrupt both at the GPIO level,
     // and at the PLIC level.
     PLIC_enable_interrupt (&g_plic, INT_DEVICE_BUTTON_0);
     PLIC_enable_interrupt (&g_plic, INT_DEVICE_BUTTON_1);
+    PLIC_enable_interrupt(&g_plic, INT_DEVICE_BUTTON_2);
 
     // Priority must be set > 0 to trigger the interrupt.
     PLIC_set_priority(&g_plic, INT_DEVICE_BUTTON_0, 1);
     PLIC_set_priority(&g_plic, INT_DEVICE_BUTTON_1, 1);
+    PLIC_set_priority(&g_plic, INT_DEVICE_BUTTON_2, 1);
 
     GPIO_REG(GPIO_RISE_IE) |= (1 << BUTTON_0_OFFSET);
     GPIO_REG(GPIO_RISE_IE) |= (1 << BUTTON_1_OFFSET);
+    GPIO_REG(GPIO_RISE_IE) |= (1 << BUTTON_2_OFFSET);
 
     // Enable the Machine-External bit in MIE
     set_csr(mie, MIP_MEIP);
