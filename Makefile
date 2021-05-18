@@ -18,9 +18,11 @@ LINK_TARGET ?= flash
 GDB_PORT ?= 3333
 
 # Variables the user probably shouldn't override.
-builddir := work/build
+ROOT=$(shell pwd)
+builddir := $(ROOT)/work/build
 installdir := work/install
 toolchain_srcdir := riscv-gnu-toolchain
+llvm_srcdir := riscv-llvm
 openocd_srcdir := openocd
 
 #############################################################
@@ -115,6 +117,7 @@ toolchain_prefix := $(toolchain_builddir)/prefix
 RISCV_PATH ?= $(toolchain_prefix)
 
 RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gcc)
+RISCV_CLANG   := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-clang)
 RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-g++)
 RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-objdump)
 RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gdb)
@@ -127,8 +130,23 @@ $(RISCV_GCC) $(RISCV_GXX) $(RISCV_OBJDUMP) $(RISCV_GDB) $(RISCV_AR): $(toolchain
 
 # Builds riscv-gnu-toolchain, which contains GCC and all the supporting
 # software for C code.
-.PHONY: riscv-gnu-toolchain
+.PHONY: riscv-gnu-toolchain riscv-llvm-toolchain
 riscv-gnu-toolchain: $(RISCV_GCC) $(RISCV_GXX) $(RISCV_OBJDUMP) $(RISCV_GDB) $(RISCV_AR)
+
+riscv-llvm-toolchain:
+	mkdir -p $(builddir)/llvm/
+	ln -s $(ROOT)/riscv-llvm/clang $(ROOT)/riscv-llvm/llvm/tools || true
+	cd $(builddir)/llvm && \
+		cmake -DCMAKE_BUILD_TYPE="Release" \
+			  -DBUILD_SHARED_LIBS=True -DLLVM_USE_SPLIT_DWARF=True \
+			  -DCMAKE_INSTALL_PREFIX="$(toolchain_prefix)" \
+			  -DLLVM_OPTIMIZED_TABLEGEN=True -DLLVM_BUILD_TESTS=False \
+			  -DDEFAULT_SYSROOT="$(toolchain_prefix)/riscv64-unknown-elf" \
+			  -DLLVM_DEFAULT_TARGET_TRIPLE="riscv64-unknown-elf" \
+			  -DLLVM_TARGETS_TO_BUILD="RISCV" \
+			  $(ROOT)/riscv-llvm/llvm/
+	cd $(builddir)/llvm/ && make -j`nproc` install
+
 
 $(builddir)/riscv-gnu-toolchain/%/install.stamp: $(builddir)/riscv-gnu-toolchain/%/build.stamp
 	$(MAKE) -C $(dir $@) install
