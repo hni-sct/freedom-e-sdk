@@ -29,8 +29,9 @@ LDFLAGS += -L$(ENV_DIR) --specs=nano.specs
 
 ASM_OBJS := $(ASM_SRCS:.S=.o)
 C_OBJS := $(C_SRCS:.c=.o)
+CLANG_C_OBJS := $(CLANG_C_SRCS:.c=.o)
 
-LINK_OBJS += $(ASM_OBJS) $(C_OBJS)
+LINK_OBJS += $(ASM_OBJS) $(C_OBJS) $(CLANG_C_OBJS)
 LINK_DEPS += $(LINKER_SCRIPT)
 
 CLEAN_OBJS += $(TARGET) $(LINK_OBJS)
@@ -48,6 +49,9 @@ $(ASM_OBJS): %.o: %.S $(HEADERS)
 
 $(C_OBJS): %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDES) -include sys/cdefs.h -c -o $@ $<
+
+$(CLANG_C_OBJS): %.o: %.c $(HEADERS)
+	$(CLANG_CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 .PHONY: clean
 clean:

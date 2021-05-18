@@ -117,7 +117,7 @@ toolchain_prefix := $(toolchain_builddir)/prefix
 RISCV_PATH ?= $(toolchain_prefix)
 
 RISCV_GCC     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gcc)
-RISCV_CLANG   := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-clang)
+RISCV_CLANG   := $(abspath $(RISCV_PATH)/bin/clang)
 RISCV_GXX     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-g++)
 RISCV_OBJDUMP := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-objdump)
 RISCV_GDB     := $(abspath $(RISCV_PATH)/bin/riscv64-unknown-elf-gdb)
@@ -216,11 +216,11 @@ PROGRAM_ELF = software/$(PROGRAM)/$(PROGRAM)
 .PHONY: software_clean
 clean: software_clean
 software_clean:
-	$(MAKE) -C $(PROGRAM_DIR) CC=$(RISCV_GCC) RISCV_ARCH=$(RISCV_ARCH) RISCV_ABI=$(RISCV_ABI) AR=$(RISCV_AR) BSP_BASE=$(abspath bsp) BOARD=$(BOARD) LINK_TARGET=$(LINK_TARGET) clean
+	$(MAKE) -C $(PROGRAM_DIR) CC=$(RISCV_GCC) CLANG_CC=$(RISCV_CLANG) RISCV_ARCH=$(RISCV_ARCH) RISCV_ABI=$(RISCV_ABI) AR=$(RISCV_AR) BSP_BASE=$(abspath bsp) BOARD=$(BOARD) LINK_TARGET=$(LINK_TARGET) clean
 
 .PHONY: software
 software: software_clean
-	$(MAKE) -C $(PROGRAM_DIR) CC=$(RISCV_GCC) RISCV_ARCH=$(RISCV_ARCH) RISCV_ABI=$(RISCV_ABI) AR=$(RISCV_AR) BSP_BASE=$(abspath bsp) BOARD=$(BOARD) LINK_TARGET=$(LINK_TARGET)
+	$(MAKE) -C $(PROGRAM_DIR) CC=$(RISCV_GCC) CLANG_CC=$(RISCV_CLANG) RISCV_ARCH=$(RISCV_ARCH) RISCV_ABI=$(RISCV_ABI) AR=$(RISCV_AR) BSP_BASE=$(abspath bsp) BOARD=$(BOARD) LINK_TARGET=$(LINK_TARGET)
 
 dasm: software $(RISCV_OBJDUMP)
 	$(RISCV_OBJDUMP) -D $(PROGRAM_ELF)
